@@ -1,9 +1,12 @@
 'use client'
 
+// redux imports and setup
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
 import { RootState } from "../appState/store"
 import { AppDispatch } from "../appState/store"
+
+import FixtureTab from "../components/fixtures"
 
 export default function MainPage () {
 
@@ -39,7 +42,8 @@ export default function MainPage () {
 
                 {/** the rendering of the different tabs will happend around here => this part will be scrollable */}
                 <div>
-                    
+                    {/** conditional rendering of tabs will happen here okay */}
+                    <FixtureTab/>
                 </div>
 
             </div>
