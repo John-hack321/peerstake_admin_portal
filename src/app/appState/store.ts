@@ -6,10 +6,12 @@ import type { WebStorage } from 'redux-persist';
 
 // Import your reducers
 import adminDataReducer from "./slices/adminData"
+import allFixturesDataReducer from "./slices/matchData"
 
 // Root reducer
 export const rootReducer = combineReducers({
     adminData: adminDataReducer,
+    allFixturesData: allFixturesDataReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -39,7 +41,7 @@ const persistConfig = {
     key: 'root',
     version: 1,
     storage,
-    whitelist: ['adminData',''],
+    whitelist: ['adminData','allFixturesData'],
 };
 
 // Create persisted reducer
