@@ -119,7 +119,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
             formData.append('username', username);
             
             console.log("Sending login request with username and password");
-            const response = await axios.post('http://localhost:8000/auth/token', formData, { // we will need ot change this endpoint and also use the in system set varialbe the next js style
+            const response = await axios.post('http://localhost:8000/admin/auth/token', formData, { 
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'
@@ -128,8 +128,8 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
     
             console.log(`the backeng login function has been reaches and it has returned the following login data`, response.data)
     
-            const accessToken = response.data.access_token;
-            const refreshToken = response.data.refresh_token;
+            const accessToken = response.data.admin_access_token;
+            const refreshToken = response.data.admin_refresh_token;
             
             // Set the token in axios headers
             axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
@@ -165,7 +165,7 @@ export const AuthProvider = ({children}: AuthProviderProps) => {
             throw error;
             }
     };
-    
+
     const logout = async () => {
         try {
             // Call backend logout endpoint

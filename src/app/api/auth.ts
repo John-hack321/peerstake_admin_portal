@@ -11,7 +11,7 @@ export const refreshAccessToken= async () /* Promise<RefreshTokenResponse> */ =>
             console.error(`an error occured: refresh token not found in localStorage`)
         }
 
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/auth/token/refresh`, null, { // change the url to match the admin endpoint for refresh tokens/ tokens in general
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/admin/auth/token/refresh`, null, { // change the url to match the admin endpoint for refresh tokens/ tokens in general
             headers: {
             'Authorization': `Bearer ${refreshToken}`
             }
