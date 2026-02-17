@@ -15,9 +15,9 @@ const adminDataSlice= createSlice({
     name: "adminData",
     initialState,
     reducers:{
-        updateAdminIdAndUsername: (state, action: PayloadAction<{id: number, username: string}>) => {
-            state.admin_id= action.payload.id
-            state.admin_username= action.payload.username
+        updateAdminIdAndUsername: (state, action: PayloadAction<AdminDataInterface>) => {
+            state.admin_id= action.payload.admin_id
+            state.admin_username= action.payload.admin_username
         }
     }
 })
