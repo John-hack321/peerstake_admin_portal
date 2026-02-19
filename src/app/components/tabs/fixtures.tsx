@@ -1,14 +1,14 @@
 'use client'
 import { useEffect } from "react"
-import { AllFixturesApiResponse } from "../schemas/match_schemas"
-import { get_all_fixtures_from_backend } from "../api/fixtures"
+import { AllFixturesApiResponse } from "../../schemas/match_schemas"
+import { get_all_fixtures_from_backend } from "../../api/fixtures"
 
 // redux setup
-import { RootState } from "../appState/store";
+import { RootState } from "../../appState/store";
 import { useSelector } from "react-redux";
-import { AppDispatch } from "../appState/store";
+import { AppDispatch } from "../../appState/store";
 import { useDispatch } from "react-redux";
-import { updateAllFixturesData } from "../appState/slices/matchData";
+import { updateAllFixturesData } from "../../appState/slices/matchData";
 
 
 export default function FixtureTab () {

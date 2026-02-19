@@ -11,8 +11,13 @@
   --color-green-components : #60991A;
   --color-lightblue-components : #23313D; 
   --color-custom-white-text-color : #d1d5dc;
+  --color-side-panel-text-color: #9CA1A9;
 
   --color-other-blue-main-background-color: #1a2633;
+
+  --color-menuside-bar-background-color: #0F1729;
+  --color-sidetab-hover-click-color: #1D283A;
+
 
 
   --color-background: var(--background);
