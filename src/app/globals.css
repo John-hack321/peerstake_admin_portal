@@ -6,19 +6,32 @@
 }
 
 @theme inline {
-  --color-background-blue : #16202C;
-  --color-yellow-components : #FED800;
-  --color-green-components : #60991A;
-  --color-lightblue-components : #23313D; 
-  --color-custom-white-text-color : #d1d5dc;
-  --color-side-panel-text-color: #9CA1A9;
-
-  --color-other-blue-main-background-color: #1a2633;
-
+  /* Sidebar - stays dark navy blue */
   --color-menuside-bar-background-color: #0F1729;
   --color-sidetab-hover-click-color: #1D283A;
+  --color-side-panel-text-color: #9CA1A9;
 
+  /* Main content area - light/white theme */
+  --color-background-blue: #f0f4f8;
+  --color-content-bg: #ffffff;
+  --color-content-secondary: #f7f9fc;
+  --color-content-border: #e2e8f0;
+  --color-content-text-primary: #1a202c;
+  --color-content-text-secondary: #64748b;
+  --color-content-card-bg: #ffffff;
+  
+  /* Accent colors - blue palette */
+  --color-accent-primary: #2563eb;
+  --color-accent-secondary: #3b82f6;
+  --color-accent-light: #dbeafe;
+  --color-accent-hover: #1d4ed8;
 
+  /* Legacy vars (kept for sidebar/login compatibility) */
+  --color-yellow-components: #FED800;
+  --color-green-components: #60991A;
+  --color-lightblue-components: #23313D;
+  --color-custom-white-text-color: #d1d5dc;
+  --color-other-blue-main-background-color: #1a2633;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -40,37 +53,35 @@ body {
 }
 
 /* Custom Scrollbar Styles */
-/* For Webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a2633; /* Dark background for the track */
+  background: #f1f5f9;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FED800; /* Yellow accent for the thumb */
+  background: #cbd5e1;
   border-radius: 10px;
-  border: 2px solid #1a2633; /* Border to match track color */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ffd700; /* Slightly lighter yellow on hover */
+  background: #94a3b8;
 }
 
-/* For Firefox */
+/* Sidebar scrollbar stays dark */
+aside ::-webkit-scrollbar-track {
+  background: #0F1729;
+}
+
+aside ::-webkit-scrollbar-thumb {
+  background: #1D283A;
+}
+
 html {
-  scrollbar-width: thin; /* "auto" or "thin" */
-  scrollbar-color: #FED800 #1a2633; /* thumb color track color */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
-
-/* Staggered/Cascading Grid Effect */
-@media (min-width: 768px) { /* Corresponds to md: breakpoint */
-  .staggered-grid > *:nth-child(2n) {
-    margin-top: 1rem; /* Adjusted to a smaller value for less space */
-  }
-}
-

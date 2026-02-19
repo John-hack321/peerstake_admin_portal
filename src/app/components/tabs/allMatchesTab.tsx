@@ -30,20 +30,23 @@ function ScoreModal({ fixture, onClose, onPost }: ScoreModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.7)" }}
+      style={{ background: "rgba(15,23,41,0.6)", backdropFilter: "blur(4px)" }}
       onClick={onClose}
     >
       <div
-        className="rounded-xl p-6 w-full max-w-sm shadow-2xl"
-        style={{ background: "#0F1729", border: "1px solid #1D283A" }}
+        className="rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+        style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-white font-semibold text-sm">Record Score</h3>
+          <h3 className="font-semibold text-sm" style={{ color: "#1a202c" }}>
+            Record Score
+          </h3>
           <button
             onClick={onClose}
-            className="text-[#9CA1A9] hover:text-white text-lg leading-none"
+            className="text-lg leading-none transition-colors hover:text-slate-700"
+            style={{ color: "#94a3b8" }}
           >
             ✕
           </button>
@@ -51,22 +54,26 @@ function ScoreModal({ fixture, onClose, onPost }: ScoreModalProps) {
 
         {/* Match title */}
         <div
-          className="rounded-lg px-4 py-3 mb-5 text-center"
-          style={{ background: "#1D283A" }}
+          className="rounded-xl px-4 py-3 mb-5 text-center"
+          style={{ background: "#f0f4f8", border: "1px solid #e2e8f0" }}
         >
-          <p className="text-[#9CA1A9] text-xs mb-1">{fixture.league_name}</p>
-          <p className="text-white font-medium text-sm">
+          <p className="text-xs mb-1" style={{ color: "#64748b" }}>
+            {fixture.league_name}
+          </p>
+          <p className="font-medium text-sm" style={{ color: "#1a202c" }}>
             {fixture.home_team}{" "}
-            <span className="text-[#FED800] mx-2">vs</span>{" "}
+            <span style={{ color: "#2563eb" }} className="mx-2">vs</span>{" "}
             {fixture.away_team}
           </p>
-          <p className="text-[#9CA1A9] text-xs mt-1">{fixture.match_date}</p>
+          <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>
+            {fixture.match_date}
+          </p>
         </div>
 
         {/* Score inputs */}
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1">
-            <label className="text-[#9CA1A9] text-xs block mb-1 text-center">
+            <label className="text-xs block mb-1 text-center" style={{ color: "#64748b" }}>
               {fixture.home_team}
             </label>
             <input
@@ -74,19 +81,19 @@ function ScoreModal({ fixture, onClose, onPost }: ScoreModalProps) {
               min={0}
               value={homeScore}
               onChange={(e) => setHomeScore(Number(e.target.value))}
-              className="w-full text-center text-white text-2xl font-bold rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-[#FED800]"
-              style={{ background: "#1D283A", border: "1px solid #2A3A4A" }}
+              className="w-full text-center text-2xl font-bold rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={{
+                background: "#f7f9fc",
+                border: "1.5px solid #e2e8f0",
+                color: "#1a202c",
+              }}
             />
           </div>
-
-          <div
-            className="text-[#9CA1A9] text-lg font-bold px-2 pt-5"
-          >
+          <div className="text-lg font-bold px-2 pt-5" style={{ color: "#94a3b8" }}>
             –
           </div>
-
           <div className="flex-1">
-            <label className="text-[#9CA1A9] text-xs block mb-1 text-center">
+            <label className="text-xs block mb-1 text-center" style={{ color: "#64748b" }}>
               {fixture.away_team}
             </label>
             <input
@@ -94,8 +101,12 @@ function ScoreModal({ fixture, onClose, onPost }: ScoreModalProps) {
               min={0}
               value={awayScore}
               onChange={(e) => setAwayScore(Number(e.target.value))}
-              className="w-full text-center text-white text-2xl font-bold rounded-lg py-3 focus:outline-none focus:ring-2 focus:ring-[#FED800]"
-              style={{ background: "#1D283A", border: "1px solid #2A3A4A" }}
+              className="w-full text-center text-2xl font-bold rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={{
+                background: "#f7f9fc",
+                border: "1.5px solid #e2e8f0",
+                color: "#1a202c",
+              }}
             />
           </div>
         </div>
@@ -104,16 +115,20 @@ function ScoreModal({ fixture, onClose, onPost }: ScoreModalProps) {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[#9CA1A9] hover:text-white transition-colors"
-            style={{ background: "#1D283A" }}
+            className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
+            style={{
+              background: "#f0f4f8",
+              color: "#64748b",
+              border: "1px solid #e2e8f0",
+            }}
           >
             Cancel
           </button>
           <button
             onClick={handlePost}
             disabled={posting}
-            className="flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
-            style={{ background: "#FED800", color: "#0F1729" }}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
+            style={{ background: "#2563eb", color: "#ffffff" }}
           >
             {posting ? "Posting…" : "Post Score"}
           </button>
@@ -132,26 +147,27 @@ interface MatchCardProps {
 }
 
 function MatchCard({ fixture, onRecordScore, onPostScore }: MatchCardProps) {
-  const hasScore = fixture.score_string !== null && fixture.score_string !== undefined
+  const hasScore =
+    fixture.score_string !== null && fixture.score_string !== undefined
 
   return (
     <div
-      className="rounded-xl p-4 flex flex-col gap-3 transition-all hover:translate-y-[-1px]"
+      className="rounded-xl p-4 flex flex-col gap-3 transition-all hover:shadow-md hover:-translate-y-0.5"
       style={{
-        background: "#0F1729",
-        border: "1px solid #1D283A",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       }}
     >
       {/* League + Date row */}
       <div className="flex items-center justify-between">
         <span
-          className="text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{ background: "#1D283A", color: "#9CA1A9" }}
+          className="text-xs px-2.5 py-1 rounded-full font-medium"
+          style={{ background: "#dbeafe", color: "#2563eb" }}
         >
           {fixture.league_name || "Unknown League"}
         </span>
-        <span className="text-[#9CA1A9] text-xs">
+        <span className="text-xs" style={{ color: "#94a3b8" }}>
           {new Date(fixture.match_date).toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
@@ -162,38 +178,48 @@ function MatchCard({ fixture, onRecordScore, onPostScore }: MatchCardProps) {
 
       {/* Teams + Score */}
       <div className="flex items-center justify-between gap-2">
-        {/* Home */}
         <div className="flex-1 text-right">
-          <p className="text-white font-semibold text-sm">{fixture.home_team}</p>
-          <p className="text-[#9CA1A9] text-xs">Home</p>
+          <p className="font-semibold text-sm" style={{ color: "#1a202c" }}>
+            {fixture.home_team}
+          </p>
+          <p className="text-xs" style={{ color: "#94a3b8" }}>
+            Home
+          </p>
         </div>
 
-        {/* Score display */}
         <div
-          className="px-4 py-2 rounded-lg text-center min-w-[72px]"
-          style={{ background: "#1D283A" }}
+          className="px-4 py-2 rounded-xl text-center min-w-[72px]"
+          style={{ background: "#f0f4f8", border: "1px solid #e2e8f0" }}
         >
           {hasScore ? (
-            <span className="text-[#FED800] font-bold text-lg tracking-widest">
+            <span
+              className="font-bold text-lg tracking-widest"
+              style={{ color: "#2563eb" }}
+            >
               {fixture.score_string}
             </span>
           ) : (
-            <span className="text-[#9CA1A9] text-xs font-medium">vs</span>
+            <span className="text-xs font-medium" style={{ color: "#94a3b8" }}>
+              vs
+            </span>
           )}
         </div>
 
-        {/* Away */}
         <div className="flex-1 text-left">
-          <p className="text-white font-semibold text-sm">{fixture.away_team}</p>
-          <p className="text-[#9CA1A9] text-xs">Away</p>
+          <p className="font-semibold text-sm" style={{ color: "#1a202c" }}>
+            {fixture.away_team}
+          </p>
+          <p className="text-xs" style={{ color: "#94a3b8" }}>
+            Away
+          </p>
         </div>
       </div>
 
       {/* Live indicator */}
       {fixture.is_match_live && (
         <div className="flex items-center gap-1.5 justify-center">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-green-400 text-xs font-medium">LIVE</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-green-600 text-xs font-medium">LIVE</span>
         </div>
       )}
 
@@ -201,22 +227,22 @@ function MatchCard({ fixture, onRecordScore, onPostScore }: MatchCardProps) {
       <div className="flex gap-2 pt-1">
         <button
           onClick={() => onRecordScore(fixture)}
-          className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-90 active:scale-95"
+          className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-80 active:scale-95"
           style={{
-            background: "#1D283A",
-            color: "#9CA1A9",
-            border: "1px solid #2A3A4A",
+            background: "#f7f9fc",
+            color: "#64748b",
+            border: "1px solid #e2e8f0",
           }}
         >
           ✏️ Record Score
         </button>
         <button
           onClick={() => onPostScore(fixture)}
-          className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-90 active:scale-95"
+          className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-80 active:scale-95"
           style={{
-            background: hasScore ? "#FED800" : "#1D283A",
-            color: hasScore ? "#0F1729" : "#9CA1A9",
-            border: hasScore ? "none" : "1px solid #2A3A4A",
+            background: hasScore ? "#2563eb" : "#f7f9fc",
+            color: hasScore ? "#ffffff" : "#64748b",
+            border: hasScore ? "none" : "1px solid #e2e8f0",
           }}
         >
           🚀 Post Score
@@ -232,20 +258,20 @@ function MatchCardSkeleton() {
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-3 animate-pulse"
-      style={{ background: "#0F1729", border: "1px solid #1D283A" }}
+      style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}
     >
       <div className="flex justify-between">
-        <div className="h-5 w-24 rounded-full" style={{ background: "#1D283A" }} />
-        <div className="h-5 w-20 rounded" style={{ background: "#1D283A" }} />
+        <div className="h-5 w-24 rounded-full" style={{ background: "#f0f4f8" }} />
+        <div className="h-5 w-20 rounded" style={{ background: "#f0f4f8" }} />
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-8 rounded" style={{ background: "#1D283A" }} />
-        <div className="w-16 h-10 rounded-lg" style={{ background: "#1D283A" }} />
-        <div className="flex-1 h-8 rounded" style={{ background: "#1D283A" }} />
+        <div className="flex-1 h-8 rounded" style={{ background: "#f0f4f8" }} />
+        <div className="w-16 h-10 rounded-xl" style={{ background: "#f0f4f8" }} />
+        <div className="flex-1 h-8 rounded" style={{ background: "#f0f4f8" }} />
       </div>
       <div className="flex gap-2">
-        <div className="flex-1 h-8 rounded-lg" style={{ background: "#1D283A" }} />
-        <div className="flex-1 h-8 rounded-lg" style={{ background: "#1D283A" }} />
+        <div className="flex-1 h-8 rounded-lg" style={{ background: "#f0f4f8" }} />
+        <div className="flex-1 h-8 rounded-lg" style={{ background: "#f0f4f8" }} />
       </div>
     </div>
   )
@@ -269,7 +295,6 @@ export default function AllMatchesTab() {
     load()
   }, [dispatch])
 
-  // Filter by search
   const filtered = fixtureState.data.filter((f) => {
     const q = search.toLowerCase()
     return (
@@ -284,18 +309,14 @@ export default function AllMatchesTab() {
   }
 
   const handlePostScore = async (fixture: Fixture) => {
-    // If no score yet, open the modal to record first
     if (!fixture.score_string) {
       setScoreModalFixture(fixture)
       return
     }
-    // Otherwise post directly
     setPostingId(fixture.match_id)
     try {
-      // TODO: replace with real API call
-      // await post_score_to_backend(fixture.match_id, fixture.score_string)
       console.log("Posting score for match:", fixture.match_id, fixture.score_string)
-      await new Promise((r) => setTimeout(r, 800)) // simulated delay
+      await new Promise((r) => setTimeout(r, 800))
     } finally {
       setPostingId(null)
     }
@@ -306,7 +327,6 @@ export default function AllMatchesTab() {
     homeScore: number,
     awayScore: number
   ) => {
-    // TODO: replace with real API call
     console.log("Posting score:", matchId, homeScore, awayScore)
     await new Promise((r) => setTimeout(r, 800))
   }
@@ -315,34 +335,37 @@ export default function AllMatchesTab() {
     <div className="flex flex-col h-full">
       {/* Toolbar */}
       <div
-        className="flex items-center gap-3 px-5 py-4 border-b"
-        style={{ borderColor: "#1D283A" }}
+        className="flex items-center gap-3 px-5 py-3 border-b"
+        style={{ borderColor: "#e2e8f0", background: "#ffffff" }}
       >
         {/* Search */}
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-lg flex-1 max-w-xs"
-          style={{ background: "#0F1729", border: "1px solid #1D283A" }}
+          style={{ background: "#f7f9fc", border: "1px solid #e2e8f0" }}
         >
-          <span className="text-[#9CA1A9] text-sm">🔍</span>
+          <span className="text-sm" style={{ color: "#94a3b8" }}>🔍</span>
           <input
             type="text"
             placeholder="Search team or league…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-white text-sm placeholder-[#9CA1A9] focus:outline-none w-full"
+            className="bg-transparent text-sm placeholder-slate-400 focus:outline-none w-full"
+            style={{ color: "#1a202c" }}
           />
         </div>
 
         {/* Stats */}
-        <div className="ml-auto flex items-center gap-4 text-xs text-[#9CA1A9]">
+        <div className="ml-auto flex items-center gap-4 text-xs" style={{ color: "#64748b" }}>
           <span>
-            <span className="text-white font-medium">{filtered.length}</span>{" "}
+            <span className="font-semibold" style={{ color: "#1a202c" }}>
+              {filtered.length}
+            </span>{" "}
             {filtered.length === 1 ? "match" : "matches"}
           </span>
           {fixtureState.data.some((f) => f.is_match_live) && (
             <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-green-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-green-600">
                 {fixtureState.data.filter((f) => f.is_match_live).length} live
               </span>
             </span>
@@ -355,8 +378,12 @@ export default function AllMatchesTab() {
             const data = await get_all_fixtures_from_backend()
             if (data) dispatch(updateAllFixturesData(data))
           }}
-          className="px-3 py-2 rounded-lg text-xs font-medium text-[#9CA1A9] hover:text-white transition-colors"
-          style={{ background: "#0F1729", border: "1px solid #1D283A" }}
+          className="px-3 py-2 rounded-lg text-xs font-medium transition-colors hover:bg-slate-50"
+          style={{
+            background: "#f7f9fc",
+            border: "1px solid #e2e8f0",
+            color: "#64748b",
+          }}
         >
           ↻ Refresh
         </button>
@@ -373,13 +400,16 @@ export default function AllMatchesTab() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3">
             <span className="text-4xl">⚽</span>
-            <p className="text-[#9CA1A9] text-sm">
-              {search ? "No matches found for your search." : "No matches loaded yet."}
+            <p className="text-sm" style={{ color: "#64748b" }}>
+              {search
+                ? "No matches found for your search."
+                : "No matches loaded yet."}
             </p>
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="text-xs text-[#FED800] hover:underline"
+                className="text-xs hover:underline"
+                style={{ color: "#2563eb" }}
               >
                 Clear search
               </button>
