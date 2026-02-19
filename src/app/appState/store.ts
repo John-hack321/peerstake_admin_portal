@@ -1,66 +1,68 @@
-// redux store setup imports
-import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
-import { combineReducers } from 'redux';
-import type { WebStorage } from 'redux-persist';
+import { configureStore } from "@reduxjs/toolkit"
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist"
+import { combineReducers } from "redux"
+import type { WebStorage } from "redux-persist"
 
-// Import your reducers
 import adminDataReducer from "./slices/adminData"
 import allFixturesDataReducer from "./slices/matchData"
+import tabsReducer from "./slices/tabslice"
 
-// Root reducer
 export const rootReducer = combineReducers({
-    adminData: adminDataReducer,
-    allFixturesData: allFixturesDataReducer,
-});
+  adminData: adminDataReducer,
+  allFixturesData: allFixturesDataReducer,
+  tabs: tabsReducer,
+})
 
-export type RootState = ReturnType<typeof rootReducer>;
-export let persistor: ReturnType<typeof persistStore>;
+export type RootState = ReturnType<typeof rootReducer>
+export let persistor: ReturnType<typeof persistStore>
 
-// Create storage wrapper that only works on client-side
-const createNoopStorage = (): WebStorage => {
-    return {
-    getItem(_key: string) {
-        return Promise.resolve(null);
-    },
-    setItem(_key: string, value: any) {
-        return Promise.resolve(value);
-    },
-    removeItem(_key: string) {
-        return Promise.resolve();
-    },
-    };
-};
+const createNoopStorage = (): WebStorage => ({
+  getItem(_key: string) {
+    return Promise.resolve(null)
+  },
+  setItem(_key: string, value: unknown) {
+    return Promise.resolve(value)
+  },
+  removeItem(_key: string) {
+    return Promise.resolve()
+  },
+})
 
-const storage = typeof window !== 'undefined' 
-    ? require('redux-persist/lib/storage').default 
-    : createNoopStorage();
+const storage =
+  typeof window !== "undefined"
+    ? require("redux-persist/lib/storage").default
+    : createNoopStorage()
 
-// Persist config
 const persistConfig = {
-    key: 'root',
-    version: 1,
-    storage,
-    whitelist: ['adminData','allFixturesData'],
-};
-
-// Create persisted reducer
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-
-// Configure store with middleware
-export const store = configureStore({
-    reducer: persistedReducer,
-    middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-        serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        },
-    }),
-});
-
-// Create persistor
-if (typeof window !== 'undefined') {
-    persistor = persistStore(store);
+  key: "root",
+  version: 1,
+  storage,
+  whitelist: ["adminData", "allFixturesData", "tabs"],
 }
 
-export type AppDispatch = typeof store.dispatch;
+const persistedReducer = persistReducer(persistConfig, rootReducer)
+
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+})
+
+if (typeof window !== "undefined") {
+  persistor = persistStore(store)
+}
+
+export type AppDispatch = typeof store.dispatch
