@@ -4,11 +4,12 @@ import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
 import { RootState } from "../appState/store"
 import { AppDispatch } from "../appState/store"
-import { closeTab, openTab, switchToTab } from "../appState/slices/tabsData"
+import { closeTab, openTab, switchToTab, setActiveSubTab } from "../appState/slices/tabsData"
 
 import FixtureTab from "../components/tabs/fixtures"
 import SideTabButton from "../components/buttons/sideTabTutton"
 import { TAB_CONFIG, getTabConfig } from "../config/tabConfig"
+import TabContentRouter from "../components/tabs/tabsContentRouter"
 
 import { useState } from "react"
 import { current } from "@reduxjs/toolkit"
@@ -28,7 +29,7 @@ function SideTabItem({ tabId, isActive, onClick }: SideTabItemProps) {
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all text-left
         ${isActive 
-        ? "bg-transparent bg-sidetab-hover-click-color bg-left-[2px]" 
+        ? " bg-sidetab-hover-click-color bg-left-[2px]" 
         : ""}
       `}
       style={{
@@ -44,11 +45,48 @@ function SideTabItem({ tabId, isActive, onClick }: SideTabItemProps) {
 }
 
 
+interface ChromeTabBarProps {
+  tabId: string
+  activeSubTabId: string
+  onSelectSubTab: (subTabId: string) => void
+}
+
+function ChromeTabBar({ tabId, activeSubTabId, onSelectSubTab }: ChromeTabBarProps) {
+  const tabConfig = getTabConfig(tabId)
+  if (!tabConfig) return null
+
+  return (
+    <div
+      className="flex items-end px-5 pt-2 gap-1 bg-white"
+      // style={{ background: "#f7f9fc" }}
+    >
+      {tabConfig.subTabs.map((st) => {
+        const isActive = st.id === activeSubTabId
+        return (
+          <button
+            key={st.id}
+            onClick={() => onSelectSubTab(st.id)}
+            className={`relative px-5 py-2 text-xs font-medium transition-all select-none whitespace-nowrap
+              ${isActive
+                ? "bg-main-page-bg-color border border-b-0 border-[#e2e8f0] text-slate-800 z-10 mb-[-1px]"
+                : "text-slate-500 hover:text-slate-700"
+              }`
+            }
+          >
+            {st.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+
 interface OpenTabsStripProps {
   openTabIds: string[]
   currentTabId: string | null
-  onSwitch?: (tabId: string) => void
-  onClose?: (tabId: string) => void
+  onSwitch: (tabId: string) => void
+  onClose: (tabId: string) => void
 }
 
 function OpenTabsStrip({ openTabIds, currentTabId, onSwitch, onClose }: OpenTabsStripProps) {
@@ -56,7 +94,7 @@ function OpenTabsStrip({ openTabIds, currentTabId, onSwitch, onClose }: OpenTabs
 
   return (
     <div
-      className="flex items-center gap-1 px-4 py-2 border-b overflow-x-auto bg-main-page-bg-color border-[#e2e8f0]"
+      className="flex items-center gap-1 px-4 py-2  overflow-x-auto bg-white rouded-full mx-4 border-[#e2e8f0]"
       style={{
         scrollbarWidth: "none",
       }}
@@ -99,39 +137,19 @@ export default function MainPage () {
     const adminData= useSelector((state: RootState)=> state.adminData)
     const {openTabs, currentTabId}= useSelector((state: RootState)=> state.tabs)
 
-    const [sideTabClicked, setSideTabClicked]= useState<boolean>(false)
-    const [currentTab, setCurrentTab]= useState<string | null>(null)
-
-    interface TabButtonsInterface {
-        id: number;
-        name: string;
-    }
-
-    const TabButtons: TabButtonsInterface[] = [
-        {id: 1, name: "users"},
-        {id: 2, name: "fixtures"},
-        {id: 3, name: "leagues"},
-        {id: 4, name: "seasons"},
-        {id: 5, name: "stakes"},
-    ]
-
-    // click functions
-    const handleSideTabButtonClick= (tabName: string | null)=> {
-        if (currentTab !== null && currentTab === tabName ) {
-            setSideTabClicked(!sideTabClicked)
-            setCurrentTab(null)
-        } 
-        else {
-            setSideTabClicked(!sideTabClicked)
-            setCurrentTab(tabName)
-        }
-    }
+    const currentTabConfig= currentTabId ? getTabConfig(currentTabId) : null
+    const currentTab= openTabs.find((t)=> t.tabId == currentTabId)
 
     /** tab handler function will go here  */
     const handleCloseTab = (tabId: string) => {
       dispatch(closeTab({ tabId }))
     }
   
+    const handleSubTabSelect = (subTabId: string) => {
+      if (!currentTabId) return
+      dispatch(setActiveSubTab({ tabId: currentTabId, subTabId }))
+    }
+
     const handleSwitchTab = (tabId: string) => {
       dispatch(switchToTab({ tabId }))
     }
@@ -206,16 +224,16 @@ export default function MainPage () {
                 </div>
               </div>
             </div>
-
           </aside>
+
           {/* the right panel */}
           <div className="flex flex-col min-w-0 flex-1">
             {/* top most bar for admin account show and normal info */}
             <div
-              className="flex items-center justify-between px-6 py-3 border-b shrink-0"
+              className="flex items-center justify-between px-6 py-3  shrink-0"
               style={{
                 background: "#ffffff",
-                borderColor: "#e2e8f0",
+                // borderColor: "#e2e8f0",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
@@ -228,7 +246,7 @@ export default function MainPage () {
                     </span>
                   </p>
                   <p className="text-xs text-[#64748b]" >
-                    Here's what's happening today.
+                    Heres whats happening today.
                   </p>
                 </div>
               </div>
@@ -256,14 +274,52 @@ export default function MainPage () {
               </div>
             </div>
 
-            {/* the open tabs strip */}
-            {/* Open tabs strip */}
+
             <OpenTabsStrip
               openTabIds={openTabs.map((t) => t.tabId)}
               currentTabId={currentTabId}
               onSwitch={handleSwitchTab}
               onClose={handleCloseTab} 
-            />
+            /> 
+
+            {/* the main content will now live here */}
+            { currentTab && currentTabConfig ? (
+              <div className="">
+                {/* Section header */}
+                <div
+                  className="px-6 pt-4 pb-0 shrink-0 bg-white"
+                  // style={{ background: "#f7f9fc", borderBottom: "1px solid #e2e8f0" }}
+                >
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-base">{currentTabConfig.icon}</span>
+                    <h2 className="font-semibold text-sm" style={{ color: "#1a202c" }}>
+                      {currentTabConfig.label}
+                    </h2>
+                  </div>
+                  <p className="text-xs mb-3" style={{ color: "#64748b" }}>
+                    Manage and configure all {currentTabConfig.label.toLowerCase()} data
+                  </p>
+                  {/* Chrome sub-tab bar */}
+                  <ChromeTabBar
+                    tabId={currentTab.tabId}
+                    activeSubTabId={currentTab.activeSubTabId}
+                    onSelectSubTab={handleSubTabSelect}
+                  />
+
+                  {/* the dynamic tab contents will now be rendered from here */}
+                  <div className="flex-1 overflow-hidden bg-main-page-bg-color">
+                    <TabContentRouter
+                      tabId={currentTab.tabId}
+                      subTabId={currentTab.activeSubTabId}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                still rendering nothing for now
+              </div>
+            )}
 
           </div> {/* right side bar foot */}
 

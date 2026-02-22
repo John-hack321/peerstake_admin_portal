@@ -2,11 +2,11 @@
 // Single source of truth for all navigation tabs.
 // Add a new tab here and it automatically appears in the sidebar.
 
-
+import {User} from "lucide-react"
 
 export interface SubTabConfig {
     id: string
-    label: string
+    label: string 
   }
   
   export interface TabConfig {

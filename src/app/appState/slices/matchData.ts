@@ -35,6 +35,12 @@ const allFixturesDataSlice= createSlice({
         },
         setLoadingState: (state)=> {
             state.isLoading= !state.isLoading
+        },
+        updateMatchStatusToLive: (state, action: PayloadAction<number>) => {
+            const matchIndex= state.data.findIndex((t)=> t.match_id === action.payload)
+            // after finding the index we update its value to read true for the is match live valuve
+            state.data[matchIndex].is_match_live= true
+            // and just like that we will have updated the vlaue of isMatchLIve at that index to true
         }
     },
     extraReducers: (builder) => {}
@@ -44,5 +50,6 @@ const allFixturesDataSlice= createSlice({
 export default allFixturesDataSlice.reducer;
 export const {updateAllFixturesData,
     appendFixturesData,
-    setLoadingState
+    setLoadingState,
+    updateMatchStatusToLive
 }= allFixturesDataSlice.actions;
