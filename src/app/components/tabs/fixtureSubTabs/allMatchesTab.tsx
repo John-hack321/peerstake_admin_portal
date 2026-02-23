@@ -24,7 +24,7 @@ function MatchCard({ fixture, onStartLoggingClick }: MatchCardProps) {
     return (
         <div className="group rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 bg-white border border-[#e8edf2]">
 
-            {/* Top accent bar - blue when live, slate otherwise */}
+            {/* Top accent bar */}
             <div className={`h-1 w-full ${fixture.is_match_live ? "bg-green-400" : "bg-blue-500"}`} />
 
             <div className="p-4 flex flex-col gap-3 flex-1">
@@ -52,7 +52,7 @@ function MatchCard({ fixture, onStartLoggingClick }: MatchCardProps) {
                         <span className="text-[10px] text-slate-400">Home</span>
                     </div>
 
-                    {/* Score / VS badge */}
+                    {/* Score / VS */}
                     <div className="flex flex-col items-center gap-0.5 px-2">
                         {hasScore ? (
                             <div className="bg-blue-600 text-white text-sm font-bold px-3 py-1.5 rounded-xl tracking-widest shadow-sm">
@@ -83,11 +83,9 @@ function MatchCard({ fixture, onStartLoggingClick }: MatchCardProps) {
                     </div>
                 </div>
 
-                {/* Footer — match ID + CTA */}
+                {/* Footer */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-[11px] text-slate-400">
-                        #{fixture.match_id}
-                    </span>
+                    <span className="text-[11px] text-slate-400">#{fixture.match_id}</span>
                     <button
                         onClick={onStartLoggingClick}
                         disabled={fixture.is_match_live}
@@ -106,7 +104,7 @@ function MatchCard({ fixture, onStartLoggingClick }: MatchCardProps) {
 }
 
 
-// ─── Skeleton Loader ──────────────────────────────────────────────────────────
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function MatchCardSkeleton() {
     return (
@@ -138,12 +136,11 @@ function MatchCardSkeleton() {
 }
 
 
-// ─── All Matches Main Component ───────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AllMatchesSubTab() {
     const dispatch = useDispatch<AppDispatch>()
     const fixtureState = useSelector((state: RootState) => state.allFixturesData)
-
     const [search, setSearch] = useState("")
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -172,14 +169,15 @@ export default function AllMatchesSubTab() {
                 dispatch(updateMatchStatusToLive(matchId))
             }
         } catch (error) {
-            console.error(`an error occured while trying to log match of id : ${matchId} `, error)
+            console.error(`error making match ${matchId} live:`, error)
         } finally {
             setLoading(false)
         }
     }
 
     return (
-        <div className="flex flex-col h-full w-full">
+        // ✅ No overflow-y-auto here — the parent page scroll handles everything
+        <div className="w-full">
 
             {/* Toolbar */}
             <div className="flex items-center gap-3 px-5 py-3 border-b border-[#e2e8f0] bg-main-page-bg-color">
@@ -220,13 +218,11 @@ export default function AllMatchesSubTab() {
                 </button>
             </div>
 
-            {/* Grid */}
-            <div className="flex-1 overflow-y-auto p-5">
+            {/* Cards grid — no height cap, just flows naturally */}
+            <div className="p-5">
                 {fixtureState.isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                            <MatchCardSkeleton key={i} />
-                        ))}
+                        {Array.from({ length: 6 }).map((_, i) => <MatchCardSkeleton key={i} />)}
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 gap-3">
