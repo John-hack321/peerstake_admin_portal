@@ -42,7 +42,8 @@ export const  makeMatchLiveAndReadyForLogging= async (matchId: number): Promise 
 
         const match_id = matchId
 
-        const response = await axios.post(`${API_BASE_URL}/admin/fixtures/make_match_live_and_start_logging`, match_id , {
+        const response = await axios.post(`${API_BASE_URL}/admin/fixtures/make_match_live_and_start_logging`, null , {
+            params: {match_id: match_id},
             headers : {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
