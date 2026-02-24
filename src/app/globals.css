@@ -52,19 +52,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FED800; /* Yellow accent for the thumb */
+  background: #f0f4f8; /* Yellow accent for the thumb */
   border-radius: 10px;
   border: 2px solid #1a2633; /* Border to match track color */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ffd700; /* Slightly lighter yellow on hover */
+  background: #f0f4f8; /* Slightly lighter yellow on hover */
 }
 
 /* For Firefox */
 html {
   scrollbar-width: thin; /* "auto" or "thin" */
-  scrollbar-color: #FED800 #1a2633; /* thumb color track color */
+  scrollbar-color: #f0f4f8 #1a2633; /* thumb color track color */
 }
 
 /* Staggered/Cascading Grid Effect */
