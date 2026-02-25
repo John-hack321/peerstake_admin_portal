@@ -8,11 +8,7 @@ import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState, AppDispatch } from "@/app/appState/store"
 
-interface LiveMatchCardProps {
-  fixture: Fixture
-  OnEndMatchCick: ()=> void
-  isLoading: boolean  // <-- per-card loading so only THAT card shows a spinner
-}
+
 
 
 interface Toast {
@@ -43,8 +39,27 @@ interface Toast {
     )
   }
 
+  interface LiveMatchCardProps {
+    fixture: Fixture
+    OnEndMatchCick: ()=> void
+    isLoading: boolean  // <-- per-card loading so only THAT card shows a spinner
+    onHomeLoggingButtonClick: ()=> void
+    onAwayLoggingButtonClick: ()=> void
+    homeButtonClicked?: boolean
+    awayButtonClicked?: boolean
+    currentMatchId?: number
+  }
 
-function LiveMatchCard({ fixture,OnEndMatchCick, isLoading }: LiveMatchCardProps) {
+function LiveMatchCard({ 
+  fixture,
+  OnEndMatchCick, 
+  onHomeLoggingButtonClick,
+  onAwayLoggingButtonClick, 
+  isLoading,
+  homeButtonClicked,
+  awayButtonClicked,
+  currentMatchId, }: LiveMatchCardProps) {
+
   const hasScore = fixture.score_string !== null && fixture.score_string !== undefined
 
   return (
@@ -65,9 +80,17 @@ function LiveMatchCard({ fixture,OnEndMatchCick, isLoading }: LiveMatchCardProps
 
         <div className="flex items-center justify-between gap-2 py-1">
           <div className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-base font-bold text-slate-500 uppercase">
+
+            {/* match loging button */}
+            <button 
+            onClick={onHomeLoggingButtonClick}
+            className={`w-9 h-9 rounded-fullflex items-center justify-center text-base font-bold 
+            ${homeButtonClicked && currentMatchId === fixture.match_id
+            ? "bg-blue-500 border-slate-200 text-white" 
+            : "bg-slate-100 border border-slate-200  text-slate-500 uppercase"}   `}> 
               {fixture.home_team[0]}
-            </div>
+            </button>
+
             <p className="text-xs font-semibold text-slate-700 text-center leading-tight">
               {truncateTeamName(fixture.home_team, 14)}
             </p>
@@ -93,9 +116,17 @@ function LiveMatchCard({ fixture,OnEndMatchCick, isLoading }: LiveMatchCardProps
           </div>
 
           <div className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-base font-bold text-slate-500 uppercase">
-              {fixture.away_team[0]}
-            </div>
+
+            {/* match loggin button */}
+            <button 
+              onClick={onAwayLoggingButtonClick}
+              className={`w-9 h-9 rounded-fullflex items-center justify-center text-base font-bold 
+              ${awayButtonClicked && currentMatchId === fixture.match_id
+                ? "bg-blue-500 border-slate-200 text-white" 
+                : "bg-slate-100 border border-slate-200  text-slate-500 uppercase"}   `}> 
+                {fixture.away_team[0]}
+            </button>
+
             <p className="text-xs font-semibold text-slate-700 text-center leading-tight">
               {truncateTeamName(fixture.away_team, 14)}
             </p>
@@ -207,6 +238,38 @@ export default function LiveMatchLogging () {
         )
     })
 
+    const [currentScoreData, setCurrentScoreData] = useState<{
+      matchId: number,
+      homeScore: number,
+      awayScore: number,
+      homeButtonClicked?: boolean,
+      awayButtonClicked?: boolean } | null>(null)
+    // we need this for tracking the current match that we are tracking :
+
+    const handleHomeLoggingButtonClick = (matchId: number, homeScore: number = 0, awayScore: number = 0) => {
+      console.log(`the home button has been clicked for fixture of id : ${matchId}`)
+      if (currentScoreData) {
+        if (currentScoreData.matchId === matchId) {
+          setCurrentScoreData(null)
+        }
+      }
+      else {
+      setCurrentScoreData({matchId: matchId, homeScore: homeScore, awayScore: awayScore, homeButtonClicked: true})
+      console.log(`current Score handler function has been set with data , ${currentScoreData}`)
+      }
+    }
+
+    const handleAwayLoggingButtonClick = (matchId: number, homeScore: number = 0, awayScore: number = 0) => {
+      if (currentScoreData) {
+        if (currentScoreData.matchId === matchId) {
+          setCurrentScoreData(null)
+        }
+      }
+      else {
+      setCurrentScoreData({matchId, homeScore, awayScore, awayButtonClicked: true})
+      }
+    }
+
     const dismissToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id))
     return (
         <div
@@ -270,7 +333,12 @@ export default function LiveMatchLogging () {
                     key={fixture.match_id}
                     fixture={fixture}
                     isLoading={loadingIds.has(fixture.match_id)}
-                    OnEndMatchCick={()=> {}}/>
+                    OnEndMatchCick={()=> {}}
+                    onHomeLoggingButtonClick={()=> {handleHomeLoggingButtonClick(fixture.match_id,1,0)}} /* a score of 1 is recorded for the home team */
+                    onAwayLoggingButtonClick={()=> {handleAwayLoggingButtonClick(fixture.match_id,0,1)}} /* a score of 1 is recorded for the away team on click  */
+                    homeButtonClicked={currentScoreData?.homeButtonClicked}
+                    awayButtonClicked={currentScoreData?.awayButtonClicked}
+                    />
                 ))
                 }
             </div>

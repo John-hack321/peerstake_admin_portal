@@ -105,3 +105,51 @@ export const makeMatchLiveAndReadyForLogging = async (
     throw new ApiError(0, "Could not reach the server. Check your connection.")
   }
 }
+
+
+export const log_live_match_scores = async (
+  matchId: number ,
+  homeScore: number,
+  awayScore: number): Promise<GeneralPostResponseModel> => {
+  
+  const accessToken= localStorage.getItem("accessToken")
+    if (!accessToken) {
+      console.error("access token was not found in the local storage")
+    }
+
+  try {
+
+    const score_string: string= `${homeScore} - ${awayScore}`
+    const match_id: number= matchId
+
+
+    const response= await axios.post(
+      `${API_BASE_URL}/admin/fixtures/log_live_match_scores`, null, {
+        params: {match_id, score_string},
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    )
+
+    return response.data;
+
+  } catch (error) {
+
+    // AxiosError = the server responded with a non-2xx status code
+    if (error instanceof AxiosError && error.response) {
+        const status = error.response.status
+
+        if (status === 401) throw new ApiError(401, "Your session expired. Please log in again.")
+        if (status === 403) throw new ApiError(403, "You don't have permission to do this.")
+        if (status === 404) throw new ApiError(404, `Match #${matchId} was not found.`)
+        if (status === 422) throw new ApiError(422, "Invalid request. Please refresh and try again.")
+        if (status >= 500) throw new ApiError(status, "A server error occurred. Please try again later.")
+    }
+
+    // No response at all = network error (no internet, backend is down, etc.)
+    throw new ApiError(0, "Could not reach the server. Check your connection.")
+  }
+}
