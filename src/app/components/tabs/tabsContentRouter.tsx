@@ -1,6 +1,7 @@
 'use client'
 import AllMatchesSubTab from "./fixtureSubTabs/allMatchesTab"
 import LiveMatchLogging from "./fixtureSubTabs/liveMatchLogging"
+import AllUsersSubTab from "./userSubTabs/allUsers"
 
 interface ContentRouterProps {
     tabId: string
@@ -14,5 +15,8 @@ export default function TabContentRouter ({
         if (tabId === "fixtures") {
             if (subTabId === "all-matches") return <AllMatchesSubTab/>
             if (subTabId === "live") return <LiveMatchLogging/>
+        }
+        if (tabId === "users") {
+            if (subTabId === "all-users") return <AllUsersSubTab/>
         }
     }

@@ -1,0 +1,10 @@
+small code changes that I probably need to do for my own sake: 
+
+    1) make the toobar code on the tabs reusable so that I dont havee to write it everywhere all the time
+
+
+
+
+
+
+completed stuff : 
