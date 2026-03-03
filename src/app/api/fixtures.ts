@@ -2,24 +2,7 @@ import axios, { AxiosError } from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8000';
 import { AllFixturesApiResponse } from '../schemas/match_schemas';
 import { GeneralPostResponseModel } from '../schemas/general';
-
-
-// ─── A typed error we can throw and catch meaningfully ───────────────────────
-//
-// Instead of every API function returning `null` on failure (losing all info
-// about what went wrong), we throw this. The component that calls the API
-// can then catch it and know the exact status code + a human-readable message.
-
-export class ApiError extends Error {
-    constructor(
-    public statusCode: number,
-    message: string
-    ) {
-    super(message)
-    this.name = "ApiError"
-    }
-}
-
+import { ApiError } from './api_utils';
 
 // ─── Get all fixtures ─────────────────────────────────────────────────────────
 // (unchanged — returning null here is fine since it's a background load)

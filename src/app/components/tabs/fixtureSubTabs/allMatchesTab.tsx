@@ -6,8 +6,9 @@ import { RootState, AppDispatch } from "@/app/appState/store"
 import { updateMatchStatusToLive } from "@/app/appState/slices/matchData"
 import { Fixture } from "@/app/schemas/match_schemas"
 import { updateAllFixturesData } from "@/app/appState/slices/matchData"
-import { get_all_fixtures_from_backend, makeMatchLiveAndReadyForLogging, ApiError } from "@/app/api/fixtures"
+import { get_all_fixtures_from_backend, makeMatchLiveAndReadyForLogging} from "@/app/api/fixtures"
 import { formatMatchDate, truncateTeamName } from "@/app/config/uitlity_functions"
+import { ApiError } from "@/app/api/api_utils"
 
 
 // ─── Toast notification (simple, no external library needed) ─────────────────
@@ -200,7 +201,7 @@ export default function AllMatchesSubTab() {
   const dismissToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
   useEffect(() => {
-    const load = async () => {
+    const load = async () => { // find a way to know if the store is already populated with data and when not to the api call
       const data = await get_all_fixtures_from_backend()
       if (data) dispatch(updateAllFixturesData(data))
     }

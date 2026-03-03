@@ -7,7 +7,8 @@ import { useState } from "react"
 // redux data setup
 import { useDispatch, useSelector } from "react-redux"
 import { RootState, AppDispatch } from "@/app/appState/store"
-import { log_live_match_scores, ApiError } from "@/app/api/fixtures"
+import { log_live_match_scores } from "@/app/api/fixtures"
+import { ApiError } from "@/app/api/api_utils"
 
 
 interface Toast {
