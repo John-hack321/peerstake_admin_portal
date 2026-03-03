@@ -7,7 +7,7 @@ import TabContentRouter from "../components/tabs/tabsContentRouter"
 import { useEffect, useRef, useState } from "react"
 
 
-// ─── Hook: hide on scroll-down, show on scroll-up ────────────────────────────
+// hide on scroll up and show on scroll down functionality for the header part of the page.
 
 function useScrollDirection(scrollRef: React.RefObject<HTMLDivElement | null>) {
   const [visible, setVisible] = useState(true)
@@ -20,8 +20,8 @@ function useScrollDirection(scrollRef: React.RefObject<HTMLDivElement | null>) {
     const onScroll = () => {
       const currentY = el.scrollTop
       const diff = currentY - lastY.current
-      if (diff > 4)       setVisible(false)  // scrolling down → hide
-      else if (diff < -4) setVisible(true)   // scrolling up   → show
+      if (diff > 4)       setVisible(false)
+      else if (diff < -4) setVisible(true)
       lastY.current = currentY
     }
 
@@ -33,28 +33,84 @@ function useScrollDirection(scrollRef: React.RefObject<HTMLDivElement | null>) {
 }
 
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Sidebar Tab Item with collapsible subtabs ────────────────────────────────
 
-function SideTabItem({ tabId, isActive, onClick }: {
-  tabId: string; isActive?: boolean; onClick?: () => void
+function SideTabItem({ tabId, isActive, isExpanded, onClick, onSubTabClick, activeSubTabId }: {
+  tabId: string
+  isActive?: boolean
+  isExpanded?: boolean
+  onClick?: () => void
+  onSubTabClick?: (subTabId: string) => void
+  activeSubTabId?: string
 }) {
   const config = getTabConfig(tabId)
   if (!config) return null
+
   return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all text-left"
-      style={{
-        color: isActive ? "#ffffff" : "#9CA1A9",
-        background: isActive ? "#1D283A" : "transparent",
-        borderLeft: isActive ? "2px solid #3b82f6" : "2px solid transparent",
-      }}
-    >
-      <span>{config.icon}</span>
-      <span>{config.label}</span>
-    </button>
+    <div>
+      {/* Main tab row */}
+      <button
+        onClick={onClick}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all text-left group"
+        style={{
+          color: isActive ? "#ffffff" : "#9CA1A9",
+          background: isActive && !isExpanded ? "#1D283A" : "transparent",
+          borderLeft: isActive ? "2px solid #3b82f6" : "2px solid transparent",
+        }}
+      >
+        <span className="text-base leading-none shrink-0">{config.icon}</span>
+        <span className="flex-1">{config.label}</span>
+
+        {/* Chevron — rotates when expanded */}
+        <svg
+          className="shrink-0 transition-transform duration-200"
+          style={{
+            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+            color: isActive ? "#9CA1A9" : "#4B5563",
+            width: 12,
+            height: 12,
+          }}
+          viewBox="0 0 12 12"
+          fill="none"
+        >
+          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {/* Subtabs — slide open */}
+      <div
+        className="overflow-hidden transition-all duration-200"
+        style={{ maxHeight: isExpanded ? `${config.subTabs.length * 40}px` : "0px" }}
+      >
+        {config.subTabs.map((st) => {
+          const isSubActive = st.id === activeSubTabId && isActive
+          return (
+            <button
+              key={st.id}
+              onClick={() => onSubTabClick?.(st.id)}
+              className="w-full flex items-center gap-2 pl-10 pr-4 py-2 text-xs font-medium transition-all text-left"
+              style={{
+                color: isSubActive ? "#60a5fa" : "#6B7280",
+                background: isSubActive ? "#0F1E35" : "transparent",
+                borderLeft: isSubActive ? "2px solid #3b82f6" : "2px solid transparent",
+              }}
+            >
+              {/* Small dot indicator */}
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors"
+                style={{ background: isSubActive ? "#3b82f6" : "#374151" }}
+              />
+              <span>{st.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }
+
+
+// ─── Chrome-style sub-tab bar ─────────────────────────────────────────────────
 
 function ChromeTabBar({ tabId, activeSubTabId, onSelectSubTab }: {
   tabId: string; activeSubTabId: string; onSelectSubTab: (id: string) => void
@@ -128,19 +184,44 @@ export default function MainPage() {
   const adminData = useSelector((state: RootState) => state.adminData)
   const { openTabs, currentTabId } = useSelector((state: RootState) => state.tabs)
 
+  // Track which sidebar tab is expanded (independent of currentTabId so you can collapse)
+  const [expandedTabId, setExpandedTabId] = useState<string | null>(currentTabId)
+
   const currentTabConfig = currentTabId ? getTabConfig(currentTabId) : null
   const currentTab = openTabs.find((t) => t.tabId === currentTabId)
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const topVisible = useScrollDirection(scrollRef)
 
+  // Keep sidebar expanded state in sync when tab changes from tab strip
+  useEffect(() => {
+    if (currentTabId) setExpandedTabId(currentTabId)
+  }, [currentTabId])
+
   const handleCloseTab    = (tabId: string) => dispatch(closeTab({ tabId }))
   const handleSwitchTab   = (tabId: string) => dispatch(switchToTab({ tabId }))
+
   const handleSideTabClick = (tabId: string) => {
     const config = getTabConfig(tabId)
     if (!config) return
-    dispatch(openTab({ tabId, defaultSubTabId: config.defaultSubTabId }))
+
+    if (expandedTabId === tabId) {
+      // Clicking the already-expanded tab collapses it
+      setExpandedTabId(null)
+    } else {
+      setExpandedTabId(tabId)
+      dispatch(openTab({ tabId, defaultSubTabId: config.defaultSubTabId }))
+    }
   }
+
+  const handleSideSubTabClick = (tabId: string, subTabId: string) => {
+    // Open the tab if not already open, then switch to this subtab
+    const config = getTabConfig(tabId)
+    if (!config) return
+    dispatch(openTab({ tabId, defaultSubTabId: subTabId }))
+    dispatch(setActiveSubTab({ tabId, subTabId }))
+  }
+
   const handleSubTabSelect = (subTabId: string) => {
     if (!currentTabId) return
     dispatch(setActiveSubTab({ tabId: currentTabId, subTabId }))
@@ -149,8 +230,9 @@ export default function MainPage() {
   return (
     <div className="h-screen w-full flex overflow-hidden bg-main-page-bg-color">
 
-      {/* ── Sidebar: never moves ── */}
+      {/* ── Sidebar ── */}
       <aside className="flex flex-col shrink-0 w-56 h-screen bg-menuside-bar-background-color">
+        {/* Logo */}
         <div className="px-5 py-4 border-b" style={{ borderColor: "#1D283A" }}>
           <div>
             <span className="font-bold text-lg" style={{ color: "#3b82f6" }}>.peer</span>
@@ -159,6 +241,7 @@ export default function MainPage() {
           <p className="text-side-panel-text-color text-xs mt-0.5">Admin Portal</p>
         </div>
 
+        {/* Search */}
         <div className="px-3 py-3">
           <div
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer"
@@ -170,16 +253,25 @@ export default function MainPage() {
 
         <p className="text-[#9CA1A9] text-xs px-5 pb-2 uppercase tracking-widest">Navigation</p>
 
-        <nav className="flex flex-col gap-0.5 flex-1 overflow-y-auto pb-4">
-          {TAB_CONFIG.map((tab) => (
-            <SideTabItem
-              key={tab.id} tabId={tab.id}
-              isActive={currentTabId === tab.id}
-              onClick={() => handleSideTabClick(tab.id)}
-            />
-          ))}
+        {/* Nav items */}
+        <nav className="flex flex-col gap-0 flex-1 overflow-y-auto pb-4" style={{ scrollbarWidth: "none" }}>
+          {TAB_CONFIG.map((tab) => {
+            const openTab = openTabs.find((t) => t.tabId === tab.id)
+            return (
+              <SideTabItem
+                key={tab.id}
+                tabId={tab.id}
+                isActive={currentTabId === tab.id}
+                isExpanded={expandedTabId === tab.id}
+                activeSubTabId={openTab?.activeSubTabId}
+                onClick={() => handleSideTabClick(tab.id)}
+                onSubTabClick={(subTabId) => handleSideSubTabClick(tab.id, subTabId)}
+              />
+            )
+          })}
         </nav>
 
+        {/* Admin info */}
         <div className="px-4 py-3 border-t" style={{ borderColor: "#1D283A" }}>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
@@ -197,16 +289,7 @@ export default function MainPage() {
       {/* ── Right column ── */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
 
-        {/*
-          ┌─────────────────────────────────────────────────────┐
-          │  LAYER 1 — Collapsible top (slides away entirely)   │
-          │                                                     │
-          │  Uses `overflow: hidden` + `max-height` transition  │
-          │  so it physically collapses to 0px height,          │
-          │  taking up zero layout space when hidden.           │
-          │  Content below naturally fills the freed space.     │
-          └─────────────────────────────────────────────────────┘
-        */}
+        {/* Collapsible top bar */}
         <div
           className="overflow-hidden shrink-0"
           style={{
@@ -266,15 +349,7 @@ export default function MainPage() {
           )}
         </div>
 
-        {/*
-          ┌─────────────────────────────────────────────────────┐
-          │  LAYER 2 — Chrome tab bar (ALWAYS visible)          │
-          │                                                     │
-          │  Sits outside the collapsible div entirely.         │
-          │  Never moves, never hides. This is the permanent    │
-          │  anchor the user always sees at the top.            │
-          └─────────────────────────────────────────────────────┘
-        */}
+        {/* Chrome tab bar — always visible */}
         {currentTab && currentTabConfig && (
           <div className="shrink-0 bg-white shadow-sm">
             <ChromeTabBar
@@ -285,15 +360,7 @@ export default function MainPage() {
           </div>
         )}
 
-        {/*
-          ┌─────────────────────────────────────────────────────┐
-          │  LAYER 3 — Scrollable content                       │
-          │                                                     │
-          │  flex-1 means it always fills whatever height       │
-          │  is left after layers 1 + 2. When layer 1           │
-          │  collapses, this div grows to fill the space.       │
-          └─────────────────────────────────────────────────────┘
-        */}
+        {/* Scrollable content */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto bg-main-page-bg-color">
           {currentTab && currentTabConfig ? (
             <TabContentRouter
