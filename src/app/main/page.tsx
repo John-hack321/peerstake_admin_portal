@@ -7,7 +7,7 @@ import TabContentRouter from "../components/tabs/tabsContentRouter"
 import { useEffect, useRef, useState } from "react"
 
 
-// hide on scroll up and show on scroll down functionality for the header part of the page.
+// ─── Hide on scroll down, show on scroll up ───────────────────────────────────
 
 function useScrollDirection(scrollRef: React.RefObject<HTMLDivElement | null>) {
   const [visible, setVisible] = useState(true)
@@ -33,7 +33,7 @@ function useScrollDirection(scrollRef: React.RefObject<HTMLDivElement | null>) {
 }
 
 
-// ─── Sidebar Tab Item with collapsible subtabs ────────────────────────────────
+// ─── Sidebar Tab Item ─────────────────────────────────────────────────────────
 
 function SideTabItem({ tabId, isActive, isExpanded, onClick, onSubTabClick, activeSubTabId }: {
   tabId: string
@@ -51,25 +51,21 @@ function SideTabItem({ tabId, isActive, isExpanded, onClick, onSubTabClick, acti
       {/* Main tab row */}
       <button
         onClick={onClick}
-        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all text-left group"
-        style={{
-          color: isActive ? "#ffffff" : "#9CA1A9",
-          background: isActive && !isExpanded ? "#1D283A" : "transparent",
-          borderLeft: isActive ? "2px solid #3b82f6" : "2px solid transparent",
-        }}
+        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all text-left group
+          border-l-2
+          ${isActive
+            ? "text-white border-blue-500 " + (!isExpanded ? "bg-sidetab-hover-click-color" : "bg-transparent")
+            : "text-side-panel-text-color border-transparent hover:text-white hover:bg-sidetab-hover-click-color"
+          }`}
       >
         <span className="text-base leading-none shrink-0">{config.icon}</span>
         <span className="flex-1">{config.label}</span>
 
-        {/* Chevron — rotates when expanded */}
+        {/* Chevron */}
         <svg
-          className="shrink-0 transition-transform duration-200"
-          style={{
-            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-            color: isActive ? "#9CA1A9" : "#4B5563",
-            width: 12,
-            height: 12,
-          }}
+          className={`shrink-0 transition-transform duration-200 w-3 h-3
+            ${isExpanded ? "rotate-180" : "rotate-0"}
+            ${isActive ? "text-slate-400" : "text-gray-600"}`}
           viewBox="0 0 12 12"
           fill="none"
         >
@@ -88,17 +84,14 @@ function SideTabItem({ tabId, isActive, isExpanded, onClick, onSubTabClick, acti
             <button
               key={st.id}
               onClick={() => onSubTabClick?.(st.id)}
-              className="w-full flex items-center gap-2 pl-10 pr-4 py-2 text-xs font-medium transition-all text-left"
-              style={{
-                color: isSubActive ? "#60a5fa" : "#6B7280",
-                background: isSubActive ? "#0F1E35" : "transparent",
-                borderLeft: isSubActive ? "2px solid #3b82f6" : "2px solid transparent",
-              }}
+              className={`w-full flex items-center gap-2 pl-10 pr-4 py-2 text-xs font-medium transition-all text-left border-l-2
+                ${isSubActive
+                  ? "text-blue-400 bg-[#0F1E35] border-blue-500"
+                  : "text-gray-500 border-transparent hover:text-slate-300 hover:bg-sidetab-hover-click-color"
+                }`}
             >
-              {/* Small dot indicator */}
               <span
-                className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors"
-                style={{ background: isSubActive ? "#3b82f6" : "#374151" }}
+                className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${isSubActive ? "bg-blue-500" : "bg-gray-700"}`}
               />
               <span>{st.label}</span>
             </button>
@@ -117,8 +110,9 @@ function ChromeTabBar({ tabId, activeSubTabId, onSelectSubTab }: {
 }) {
   const tabConfig = getTabConfig(tabId)
   if (!tabConfig) return null
+
   return (
-    <div className="flex items-end px-5 pt-2 gap-1 bg-white border-b border-[#e2e8f0]">
+    <div className="flex items-end px-5 pt-2 gap-1 bg-white border-b border-slate-200">
       {tabConfig.subTabs.map((st) => {
         const isActive = st.id === activeSubTabId
         return (
@@ -127,7 +121,7 @@ function ChromeTabBar({ tabId, activeSubTabId, onSelectSubTab }: {
             onClick={() => onSelectSubTab(st.id)}
             className={`relative px-5 py-2 text-xs font-medium transition-all select-none whitespace-nowrap
               ${isActive
-                ? "bg-main-page-bg-color border border-b-0 border-[#e2e8f0] text-slate-800 z-10 mb-[-1px]"
+                ? "bg-main-page-bg-color border border-b-0 border-slate-200 text-slate-800 z-10 -mb-px"
                 : "text-slate-500 hover:text-slate-700"
               }`}
           >
@@ -139,16 +133,17 @@ function ChromeTabBar({ tabId, activeSubTabId, onSelectSubTab }: {
   )
 }
 
+
+// ─── Open tabs strip ──────────────────────────────────────────────────────────
+
 function OpenTabsStrip({ openTabIds, currentTabId, onSwitch, onClose }: {
   openTabIds: string[]; currentTabId: string | null
   onSwitch: (id: string) => void; onClose: (id: string) => void
 }) {
   if (openTabIds.length === 0) return null
+
   return (
-    <div
-      className="flex items-center gap-1 px-4 py-2 overflow-x-auto bg-white border-b border-[#e2e8f0]"
-      style={{ scrollbarWidth: "none" }}
-    >
+    <div className="flex items-center gap-1 px-4 py-2 overflow-x-auto bg-white border-b border-slate-200 [scrollbar-width:none]">
       {openTabIds.map((tabId) => {
         const config = getTabConfig(tabId)
         const isActive = tabId === currentTabId
@@ -156,19 +151,20 @@ function OpenTabsStrip({ openTabIds, currentTabId, onSwitch, onClose }: {
           <div
             key={tabId}
             onClick={() => onSwitch(tabId)}
-            className="flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-all shrink-0"
-            style={{
-              background: isActive ? "#dbeafe" : "transparent",
-              color: isActive ? "#2563eb" : "#64748b",
-              border: isActive ? "1px solid #bfdbfe" : "1px solid transparent",
-            }}
+            className={`flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium cursor-pointer transition-all shrink-0 border
+              ${isActive
+                ? "bg-blue-100 text-blue-700 border-blue-200"
+                : "bg-transparent text-slate-500 border-transparent hover:bg-slate-100"
+              }`}
           >
             <span>{config?.icon}</span>
             <span>{config?.label}</span>
             <button
               onClick={(e) => { e.stopPropagation(); onClose(tabId) }}
-              className="ml-1 leading-none opacity-60 hover:opacity-100"
-            >✕</button>
+              className="ml-1 leading-none opacity-60 hover:opacity-100 bg-transparent border-none cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
         )
       })}
@@ -184,7 +180,6 @@ export default function MainPage() {
   const adminData = useSelector((state: RootState) => state.adminData)
   const { openTabs, currentTabId } = useSelector((state: RootState) => state.tabs)
 
-  // Track which sidebar tab is expanded (independent of currentTabId so you can collapse)
   const [expandedTabId, setExpandedTabId] = useState<string | null>(currentTabId)
 
   const currentTabConfig = currentTabId ? getTabConfig(currentTabId) : null
@@ -193,7 +188,6 @@ export default function MainPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const topVisible = useScrollDirection(scrollRef)
 
-  // Keep sidebar expanded state in sync when tab changes from tab strip
   useEffect(() => {
     if (currentTabId) setExpandedTabId(currentTabId)
   }, [currentTabId])
@@ -206,7 +200,6 @@ export default function MainPage() {
     if (!config) return
 
     if (expandedTabId === tabId) {
-      // Clicking the already-expanded tab collapses it
       setExpandedTabId(null)
     } else {
       setExpandedTabId(tabId)
@@ -215,7 +208,6 @@ export default function MainPage() {
   }
 
   const handleSideSubTabClick = (tabId: string, subTabId: string) => {
-    // Open the tab if not already open, then switch to this subtab
     const config = getTabConfig(tabId)
     if (!config) return
     dispatch(openTab({ tabId, defaultSubTabId: subTabId }))
@@ -232,10 +224,11 @@ export default function MainPage() {
 
       {/* ── Sidebar ── */}
       <aside className="flex flex-col shrink-0 w-56 h-screen bg-menuside-bar-background-color">
+
         {/* Logo */}
-        <div className="px-5 py-4 border-b" style={{ borderColor: "#1D283A" }}>
+        <div className="px-5 py-4 border-b border-sidetab-hover-click-color">
           <div>
-            <span className="font-bold text-lg" style={{ color: "#3b82f6" }}>.peer</span>
+            <span className="font-bold text-lg text-blue-500">.peer</span>
             <span className="font-bold text-lg text-side-panel-text-color">stake</span>
           </div>
           <p className="text-side-panel-text-color text-xs mt-0.5">Admin Portal</p>
@@ -243,18 +236,16 @@ export default function MainPage() {
 
         {/* Search */}
         <div className="px-3 py-3">
-          <div
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer"
-            style={{ background: "#1D283A", color: "#9CA1A9", border: "1px solid #2A3A4A" }}
-          >
-            <span>🔍</span><span>Search…</span>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer bg-sidetab-hover-click-color text-side-panel-text-color border border-[#2A3A4A]">
+            <span>🔍</span>
+            <span>Search…</span>
           </div>
         </div>
 
-        <p className="text-[#9CA1A9] text-xs px-5 pb-2 uppercase tracking-widest">Navigation</p>
+        <p className="text-side-panel-text-color text-xs px-5 pb-2 uppercase tracking-widest">Navigation</p>
 
         {/* Nav items */}
-        <nav className="flex flex-col gap-0 flex-1 overflow-y-auto pb-4" style={{ scrollbarWidth: "none" }}>
+        <nav className="flex flex-col gap-0 flex-1 overflow-y-auto pb-4 [scrollbar-width:none]">
           {TAB_CONFIG.map((tab) => {
             const openTab = openTabs.find((t) => t.tabId === tab.id)
             return (
@@ -272,15 +263,14 @@ export default function MainPage() {
         </nav>
 
         {/* Admin info */}
-        <div className="px-4 py-3 border-t" style={{ borderColor: "#1D283A" }}>
+        <div className="px-4 py-3 border-t border-sidetab-hover-click-color">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-              style={{ background: "#2563eb", color: "#ffffff" }}>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-blue-600 text-white">
               {adminData.admin_username?.[0]?.toUpperCase() ?? "A"}
             </div>
             <div className="overflow-hidden">
               <p className="text-white text-xs font-medium truncate">{adminData.admin_username || "Admin"}</p>
-              <p className="text-[#9CA1A9] text-xs">Administrator</p>
+              <p className="text-side-panel-text-color text-xs">Administrator</p>
             </div>
           </div>
         </div>
@@ -291,35 +281,27 @@ export default function MainPage() {
 
         {/* Collapsible top bar */}
         <div
-          className="overflow-hidden shrink-0"
-          style={{
-            maxHeight: topVisible ? "200px" : "0px",
-            transition: "max-height 250ms ease-in-out",
-            willChange: "max-height",
-          }}
+          className="overflow-hidden shrink-0 transition-[max-height] duration-[250ms] ease-in-out will-change-[max-height]"
+          style={{ maxHeight: topVisible ? "200px" : "0px" }}
         >
           {/* Welcome bar */}
-          <div
-            className="flex items-center justify-between px-6 py-3"
-            style={{ background: "#ffffff", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
-          >
+          <div className="flex items-center justify-between px-6 py-3 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
             <div>
-              <p className="text-sm font-semibold" style={{ color: "#1a202c" }}>
+              <p className="text-sm font-semibold text-slate-900">
                 Welcome back,{" "}
-                <span style={{ color: "#2563eb" }}>{adminData.admin_username || "Admin"}</span>
+                <span className="text-blue-600">{adminData.admin_username || "Admin"}</span>
               </p>
-              <p className="text-xs text-[#64748b]">Here&apos;s what&apos;s happening today.</p>
+              <p className="text-xs text-slate-500">Here&apos;s what&apos;s happening today.</p>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100"
-                style={{ border: "1px solid #e2e8f0", color: "#64748b" }}
-              >🔔</button>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-[#2563eb] text-white">
+              <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 border border-slate-200 text-slate-500">
+                🔔
+              </button>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-blue-600 text-white">
                 {adminData.admin_username?.[0]?.toUpperCase() ?? "A"}
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-[#64748b]">
-                <span className="w-2 h-2 rounded-full bg-[#4ade80]" />
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span className="w-2 h-2 rounded-full bg-green-400" />
                 All systems online
               </div>
             </div>
@@ -338,11 +320,9 @@ export default function MainPage() {
             <div className="px-6 pt-3 pb-2 bg-white">
               <div className="flex items-center gap-2 mb-0.5">
                 <span>{currentTabConfig.icon}</span>
-                <h2 className="font-semibold text-sm" style={{ color: "#1a202c" }}>
-                  {currentTabConfig.label}
-                </h2>
+                <h2 className="font-semibold text-sm text-slate-900">{currentTabConfig.label}</h2>
               </div>
-              <p className="text-xs text-[#64748b]">
+              <p className="text-xs text-slate-500">
                 Manage and configure all {currentTabConfig.label.toLowerCase()} data
               </p>
             </div>
