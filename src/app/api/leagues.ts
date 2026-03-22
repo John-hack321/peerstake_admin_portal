@@ -3,77 +3,101 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localho
 import { GeneralPostResponseModel } from '../schemas/general';
 import { ApiError } from './api_utils';
 import { AllLeaguesApiResponse } from '../appState/slices/leaguesData';
-
-export interface ApikeyConfirmtation {
-    accessTokenString : string | null;
-    confirmation: boolean;
-}
-
-export const confirmApiKey = async () : Promise<ApikeyConfirmtation> => {
-    try {
-        const accessToken= await localStorage.getItem("accessToken")
-        if (!accessToken) {
-            const returnData: ApikeyConfirmtation = {
-                accessTokenString : null,
-                confirmation: false,
-            }
-
-            return returnData
-        }
-
-        const returnData: ApikeyConfirmtation = {
-            accessTokenString : accessToken,
-            confirmation: false,
-        }
-
-        return returnData
+ 
+// ─── Helper: get the access token or throw immediately ───────────────────────
+// Centralises the "no token → throw 401" guard that was previously done
+// differently (or incorrectly) in every function.
+ 
+const getAccessToken = (): string => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        throw new ApiError(401, 'You are not logged in. Please log in and try again.');
     }
-    catch (error) {
-        console.error('failed to confime api key', error)
-        throw new Error (`there was an error accessing the api key`)
-    }
-}
-
-// find a solution for the undefined type return issues
-
-
-export const getLeaguesList = async (limit: number = 100, page: number = 1): Promise<AllLeaguesApiResponse> => {
+    return token;
+};
+ 
+// ─── Get all leagues ──────────────────────────────────────────────────────────
+ 
+export const getLeaguesList = async (
+    limit: number = 100,
+    page: number = 1
+): Promise<AllLeaguesApiResponse> => {
+    const accessToken = getAccessToken();
+ 
     try {
-        const ApiKeyData : ApikeyConfirmtation = await  confirmApiKey()
-        if (ApiKeyData.accessTokenString) {
-            console.error(`an error occured while fetching api key from the local storage`)
-        }
-        const accessToken= ApiKeyData.accessTokenString
-    
-        const response = await axios.get(`${API_BASE_URL}/admin/leagues/admin_get_all_leagues`, {
-            params: { limit, page },
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
+        const response = await axios.get(
+            `${API_BASE_URL}/admin/leagues/admin_get_all_leagues`,
+            {
+                params: { limit, page },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
             }
-            });
-    
-            return response.data;
+        );
+ 
+        return response.data;
+ 
     } catch (error) {
-
-        // AxiosError = the server responded with a non-2xx status code
+        if (error instanceof ApiError) throw error; // re-throw our own errors (e.g. from getAccessToken)
+ 
         if (error instanceof AxiosError && error.response) {
-            const status = error.response.status
-
-        // Each code maps to a message the user can actually understand
-            if (status === 401) throw new ApiError(401, "Your session expired. Please log in again.")
-            if (status === 403) throw new ApiError(403, "You don't have permission to do this.")
-            if (status === 404) throw new ApiError(404, `No leagues were found i the database.`)
-            if (status === 422) throw new ApiError(422, "Invalid request. Please refresh and try again.")
-            if (status >= 500) throw new ApiError(status, "A server error occurred. Please try again later.")
+            const status = error.response.status;
+            if (status === 401) throw new ApiError(401, 'Your session expired. Please log in again.');
+            if (status === 403) throw new ApiError(403, "You don't have permission to do this.");
+            if (status === 404) throw new ApiError(404, 'No leagues were found in the database.');
+            if (status === 422) throw new ApiError(422, 'Invalid request. Please refresh and try again.');
+            if (status >= 500) throw new ApiError(status, 'A server error occurred. Please try again later.');
         }
-
-        // No response at all = network error (no internet, backend is down, etc.)
-        throw new ApiError(0, "Could not reach the server. Check your connection.")
-
+ 
+        throw new ApiError(0, 'Could not reach the server. Check your connection.');
     }
+};
+ 
+// ─── Add fixtures to a league ─────────────────────────────────────────────────
+// Placeholder — wire up when the backend endpoint is ready.
+ 
+export interface MatchPayload {
+    home_team: string;
+    away_team: string;
+    match_date: string; // ISO string, e.g. "2025-06-15T15:00:00"
 }
-
-// NOTE: look into the comfirm api method and make more improvements in the future.
-// NOTE: do the change to make the code to be specific to the league stuff as this is copied from matches api file
+ 
+export const addFixturesToLeague = async (
+    leagueId: number,
+    matches: MatchPayload[]
+): Promise<GeneralPostResponseModel> => {
+    const accessToken = getAccessToken();
+ 
+    try {
+        const response = await axios.post(
+            `${API_BASE_URL}/admin/leagues/${leagueId}/add_fixtures`,
+            { matches },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            }
+        );
+ 
+        return response.data;
+ 
+    } catch (error) {
+        if (error instanceof ApiError) throw error;
+ 
+        if (error instanceof AxiosError && error.response) {
+            const status = error.response.status;
+            if (status === 401) throw new ApiError(401, 'Your session expired. Please log in again.');
+            if (status === 403) throw new ApiError(403, "You don't have permission to do this.");
+            if (status === 404) throw new ApiError(404, `League #${leagueId} was not found.`);
+            if (status === 422) throw new ApiError(422, 'Invalid request. Please refresh and try again.');
+            if (status >= 500) throw new ApiError(status, 'A server error occurred. Please try again later.');
+        }
+ 
+        throw new ApiError(0, 'Could not reach the server. Check your connection.');
+    }
+};
+ 
