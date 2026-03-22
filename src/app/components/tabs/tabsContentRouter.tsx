@@ -2,6 +2,8 @@
 import AllMatchesSubTab from "./fixtureSubTabs/allMatchesTab"
 import LiveMatchLogging from "./fixtureSubTabs/liveMatchLogging"
 import AllUsersSubTab from "./userSubTabs/allUsers"
+import AllLeaguesTab from "./leagueSubTabs/allLeaguesTab"
+import LeagueManagement from "./leagueSubTabs/leagueManagementTab"
 
 interface ContentRouterProps {
     tabId: string
@@ -18,5 +20,9 @@ export default function TabContentRouter ({
         }
         if (tabId === "users") {
             if (subTabId === "all-users") return <AllUsersSubTab/>
+        }
+        if (tabId === "leagues") {
+            if (subTabId === "all-leagues") return <AllLeaguesTab/>
+            if (subTabId === "league-management") return <LeagueManagement/>
         }
     }

@@ -9,6 +9,7 @@ import adminDataReducer from "./slices/adminData"
 import allFixturesDataReducer from "./slices/matchData"
 import tabsReducer from "./slices/tabsData"
 import allUsersDataReducer from "./slices/usersData"
+import allLeaguesDataReducer from "./slices/leaguesData"
 
 // Root reducer
 export const rootReducer = combineReducers({
@@ -16,6 +17,7 @@ export const rootReducer = combineReducers({
     allFixturesData: allFixturesDataReducer,
     tabs: tabsReducer,
     allUsersData: allUsersDataReducer,
+    allLeaguesData: allLeaguesDataReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -45,7 +47,7 @@ const persistConfig = {
     key: 'root',
     version: 1,
     storage,
-    whitelist: ['adminData','allFixturesData','tabs','allUsersData'],
+    whitelist: ['adminData','allFixturesData','tabs','allUsersData', "allLeaguesData"],
 };
 
 // Create persisted reducer

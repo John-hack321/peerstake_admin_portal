@@ -10,39 +10,36 @@ import { adminGetAllUserStakes } from "@/app/api/stakes"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-// just bare with the snake case I'm a fullstack dev I alway end up intermixing snake and camel cases
 export interface UserStakeData {
-  stakeId: number;          // was stake_id — backend sends stakeId
+  stakeId: number;
   role: "owner" | "guest";
   userId: number;
-  invited_user_id: number | null;  // nullable — guest may not exist yet
+  invited_user_id: number | null;
   amount: number | null;
   invited_user_amount: number | null;
   match_id: number | null;
   home: string;
   away: string;
   stakeType: boolean | null;
-  winner: "pending" | "won" | "lost";  // backend sends these strings, not "owner"/"guest"
+  winner: "pending" | "won" | "lost";
   inviteCode: string | null;
   possibleWin: number | null;
   stakeStatus: "all" | "progressing" | "pending" | "successful";
   placement: string | null;
 }
 
-
 interface DrawerState {
   userId: number
-  mode: "all" | "live" | "pending" | "successful"
+  mode: "all" | "progressing" | "pending" | "successful"
 }
 
-// ─── Stake Status badge ─────────────────────────────────────────────────────────────
+// ─── Stake Status badge ──────────────────────────────────────────────────────
 
-// all is not a major type of return from the backend api we have just added it here as a type since we just need the functionality at the time of construction of the project you can modify it when needed.
 const STAKE_STATUS_STYLES: Record<UserStakeData["stakeStatus"], string> = {
   all: "",
   pending: "bg-yellow-100 text-yellow-800",
-  successful:     "bg-green-100 text-green-800",
-  progressing:    "bg-blue-100 text-blue-800",
+  successful: "bg-green-100 text-green-800",
+  progressing: "bg-blue-100 text-blue-800",
 }
 
 const STAKE_STATUS_LABELS: Record<UserStakeData["stakeStatus"], string> = {
@@ -52,9 +49,6 @@ const STAKE_STATUS_LABELS: Record<UserStakeData["stakeStatus"], string> = {
   progressing: "● progressing",
 }
 
-// lost: "Lost ✕",  lost:    "bg-red-100 text-red-800", : we will use this for the verdict type
-
-
 function StakeStatusBadge({ stakeStatus }: { stakeStatus: UserStakeData["stakeStatus"] }) {
   return (
     <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${STAKE_STATUS_STYLES[stakeStatus]}`}>
@@ -63,7 +57,9 @@ function StakeStatusBadge({ stakeStatus }: { stakeStatus: UserStakeData["stakeSt
   )
 }
 
-function StakeRow ({
+// ─── Stake Row ────────────────────────────────────────────────────────────────
+
+function StakeRow({
   stakeId,
   role,
   userId,
@@ -81,57 +77,85 @@ function StakeRow ({
   placement,
 }: UserStakeData) {
   return (
-    <div
-      className="flex items-center px-6 py-3 border-b border-slate-200 bg-white hover:bg-slate-50 transition-colors"
-    >
+    <div className="flex items-center px-6 py-3 border-b border-slate-200 bg-white hover:bg-slate-50 transition-colors">
+      {/* #ID */}
       <span className="w-14 shrink-0 font-mono text-[11px] text-slate-400">#{stakeId}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{role === "owner" ? "owner" : 'guest' }</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">
+      {/* Role */}
+      <span className="w-16 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">
+        {role === "owner" ? "owner" : "guest"}
+      </span>
+      {/* Status */}
+      <span className="w-28 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">
         <StakeStatusBadge stakeStatus={stakeStatus} />
       </span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{role === "owner" ? `${invited_user_id}` : `${userId}`}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">
-        {role === "owner" ? `${amount === null ? "null" : `${amount.toLocaleString()}` }` : `${invited_user_amount === null ? "null" : `${invited_user_amount.toLocaleString}`}`}</span>
-
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">
-        {role === "owner" ? `${invited_user_amount === null ? "null" : `${invited_user_amount.toLocaleString()}`}` : `${amount === null ? "null" : `${amount.toLocaleString()}`}`}</span>
-
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{match_id}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{placement}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{truncateTeamName(home)}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{truncateTeamName(away)}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{stakeType}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{winner}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{inviteCode}</span>
-      <span className="flex-1 text-[10px] font-bold  tracking-wider text-slate-800">{possibleWin}</span>
-      <div className="w-24 flex justify-end shrink-0">
-      </div>
+      {/* Owner/Guest Id */}
+      <span className="w-24 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">
+        {role === "owner" ? `${invited_user_id ?? "null"}` : `${userId}`}
+      </span>
+      {/* Amount (my amount) */}
+      <span className="w-24 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">
+        {role === "owner"
+          ? amount === null ? "null" : amount.toLocaleString()
+          : invited_user_amount === null ? "null" : invited_user_amount.toLocaleString()}
+      </span>
+      {/* Opponent amount */}
+      <span className="w-28 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">
+        {role === "owner"
+          ? invited_user_amount === null ? "null" : invited_user_amount.toLocaleString()
+          : amount === null ? "null" : amount.toLocaleString()}
+      </span>
+      {/* Match Id */}
+      <span className="w-20 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">{match_id}</span>
+      {/* Placement */}
+      <span className="w-20 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">{placement}</span>
+      {/* Home */}
+      <span className="w-24 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">{truncateTeamName(home)}</span>
+      {/* Away */}
+      <span className="w-24 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">{truncateTeamName(away)}</span>
+      {/* StakeType */}
+      <span className="w-20 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">
+        {stakeType === null ? "null" : stakeType ? "true" : "false"}
+      </span>
+      {/* Verdict */}
+      <span className="w-20 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">{winner}</span>
+      {/* Invite code */}
+      <span className="w-28 shrink-0 text-[10px] font-bold tracking-wider text-slate-800">{inviteCode ?? "—"}</span>
+      {/* Possible win */}
+      <span className="w-28 shrink-0 text-right text-[10px] font-bold tracking-wider text-slate-800">
+        {possibleWin === null ? "null" : possibleWin.toLocaleString()}
+      </span>
     </div>
   )
 }
 
-// ─── Stakes panel ─────────────────────────────────────────────────────────────
+// ─── Stakes Panel ─────────────────────────────────────────────────────────────
 
 function StakesPanel({
   userId, username, mode, onClose,
-}: { userId: number; username: string; mode: "live" | "pending" | "successful"; onClose: () => void }) { // we have remoded all clause from mode for now we will find a way to maybe incooperate it later on , that is if it is only needed
+}: {
+  userId: number
+  username: string
+  mode: "all" | "progressing" | "pending" | "successful"
+  onClose: () => void
+}) {
   const [stakesData, setStakesData] = useState<UserStakeData[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(()=>{
-    const loadUserStakesData= async (user_id: number) => {
+  useEffect(() => {
+    const loadUserStakesData = async (user_id: number) => {
       setLoading(true)
-      const data= await adminGetAllUserStakes(user_id)
+      const data = await adminGetAllUserStakes(user_id)
       setStakesData(data.stakeData)
       setLoading(false)
-      console.log('the stakes have been successfuly sourced from the backend')
+      console.log('the stakes have been successfully sourced from the backend')
     }
     loadUserStakesData(userId)
-  },[])
+  }, [userId])
 
-  const stakes: UserStakeData[] = stakesData.filter((f) => {
-    f.stakeStatus.toLocaleLowerCase().includes(mode)
-  })
+  // ── fix: added return keyword so filtering actually works ──
+  const stakes: UserStakeData[] = mode === "all"
+    ? stakesData
+    : stakesData.filter((f) => f.stakeStatus.toLowerCase() === mode)
 
   return (
     <div className="bg-slate-50 border-b border-slate-200 animate-[slideDown_0.15s_ease-out]">
@@ -141,13 +165,13 @@ function StakesPanel({
       `}</style>
 
       {/* Panel sub-header */}
-      <div className={`flex items-center justify-between px-6 py-2 border-l border-r border-t border-slate-200 ${mode === "live" ? "bg-blue-50" : "bg-slate-100"}`}>
+      <div className={`flex items-center justify-between px-6 py-2 border-l border-r border-t border-slate-200 ${mode === "progressing" ? "bg-blue-50" : "bg-slate-100"}`}>
         <div className="flex items-center gap-2">
-          {mode === "live" && (
+          {mode === "progressing" && (
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" style={{ animation: "blink 1.2s infinite" }} />
           )}
           <span className="text-xs font-semibold text-slate-500">
-            {mode === "live" ? "Live stakes" : "All stakes"} —{" "}
+            {mode === "progressing" ? "Progressing stakes" : mode === "all" ? "All stakes" : mode === "pending" ? "Pending stakes" : "Successful stakes"} —{" "}
             <span className="text-slate-800">{username}</span>
           </span>
           {!loading && (
@@ -166,7 +190,7 @@ function StakesPanel({
 
       {/* Stakes content */}
       {loading ? (
-        <div> {/* im not sure about this part yet : I dont know why ai added this here */}
+        <div>
           <div className="flex px-6 py-2 border-b border-slate-200 gap-4">
             {[50, 260, 120, 55, 80].map((w, i) => (
               <div key={i} style={{ width: w }} className="h-2.5 rounded bg-slate-200 shrink-0" />
@@ -182,127 +206,113 @@ function StakesPanel({
         </div>
       ) : stakes.length === 0 ? (
         <div className="py-8 text-center text-slate-400 text-sm">
-          {mode === "live" ? "📡" : "📋"} No {mode === "live" ? "live " : ""}stakes found.
+          {mode === "progressing" ? "📡" : "📋"} No {mode === "all" ? "" : mode} stakes found.
         </div>
       ) : (
-        <div>
-          {/* Column headers */}
-          <div className="flex items-center border-b border-r border-l px-6 py-2 bg-slate-100  border-slate-200">
+        <div className="overflow-x-auto">
+          {/* Column headers — widths mirror StakeRow exactly */}
+          <div className="flex items-center border-b border-r border-l px-6 py-2 bg-slate-100 border-slate-200 min-w-max">
             <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">#ID</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Role</span>
-            <span className="w-24  text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Status</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Owner/Guest Id</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Owner/Guest Amount</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Match Id</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Placement</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">HomeTeam</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">AwayTeam</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">StakeType</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Verdict</span>
-            <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Invite code</span>
-            <span className="w-36 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Possible win (KES)</span>
+            <span className="w-16 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Role</span>
+            <span className="w-28 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</span>
+            <span className="w-24 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Owner/Guest Id</span>
+            <span className="w-24 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount</span>
+            <span className="w-28 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Opp. Amount</span>
+            <span className="w-20 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Match Id</span>
+            <span className="w-20 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Placement</span>
+            <span className="w-24 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Home</span>
+            <span className="w-24 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Away</span>
+            <span className="w-20 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">StakeType</span>
+            <span className="w-20 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Verdict</span>
+            <span className="w-28 shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">Invite Code</span>
+            <span className="w-28 shrink-0 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">Possible Win (KES)</span>
           </div>
 
           {/* Stake rows */}
-          {stakes.map((s) => (
-            <StakeRow key={s.stakeId}
-              stakeId={s.stakeId}
-              role={s.role}
-              userId={s.userId}
-              invited_user_id={s.invited_user_id}
-              amount={s.amount}
-              invited_user_amount={s.invited_user_amount}
-              match_id={s.match_id}
-              home={s.home}
-              away={s.away}
-              stakeType={s.stakeType}
-              winner={s.winner}
-              inviteCode={s.inviteCode}
-              possibleWin={s.possibleWin}
-              stakeStatus={s.stakeStatus}
-              placement={s.placement}
-            />
-          ))}
+          <div className="min-w-max">
+            {stakes.map((s) => (
+              <StakeRow key={s.stakeId} {...s} />
+            ))}
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-// ─── User row ─────────────────────────────────────────────────────────────────
+// ─── User Row ─────────────────────────────────────────────────────────────────
 
 function UserRow({ user, activeDrawer, onStakesClick, onDeleteClick }: {
   user: UserData
   activeDrawer: DrawerState | null
-  onStakesClick: (id: number, mode: "all" | "live" | "pending" | "successful") => void
+  onStakesClick: (id: number, mode: "all" | "progressing" | "pending" | "successful") => void
   onDeleteClick: (id: number) => void
 }) {
-  const isOpen     = activeDrawer?.userId === user.id
-  const allActive  = isOpen && activeDrawer?.mode === "all"
-  const liveActive = isOpen && activeDrawer?.mode === "live"
+  const isOpen          = activeDrawer?.userId === user.id
+  const allActive       = isOpen && activeDrawer?.mode === "all"
+  const progressingActive = isOpen && activeDrawer?.mode === "progressing"
+  const pendingActive   = isOpen && activeDrawer?.mode === "pending"
+  const successActive   = isOpen && activeDrawer?.mode === "successful"
+
+  const filterBtn = (
+    label: string,
+    mode: "all" | "progressing" | "pending" | "successful",
+    isActive: boolean,
+    count?: number,
+    blink?: boolean,
+  ) => (
+    <button
+      onClick={() => onStakesClick(user.id, mode)}
+      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap
+        ${isActive
+          ? "bg-blue-100 border border-blue-300 text-blue-700 shadow-sm"
+          : "bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
+        }`}
+    >
+      {blink && count !== undefined && count > 0 && (
+        <span className="w-2 h-2 rounded-full bg-blue-500 inline-block shrink-0" style={{ animation: "blink 1.2s infinite" }} />
+      )}
+      {count !== undefined && (
+        <span className="font-bold text-[13px]">{count}</span>
+      )}
+      <span className="text-[11px] font-medium opacity-70">{label}</span>
+    </button>
+  )
 
   return (
     <>
-      <div
-        className={`flex items-center px-6 h-[58px] border-b bg-white  border-slate-200 transition-colors ${isOpen ? "bg-blue-50" : "bg-white hover:bg-slate-50"}`}
-      >
+      <div className={`flex items-center px-6 h-[62px] border-b border-slate-200 transition-colors ${isOpen ? "bg-blue-50" : "bg-white hover:bg-slate-50"}`}>
         {/* Avatar */}
         <div className="w-9 h-9 min-w-[36px] rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-extrabold text-sm shrink-0">
           {user.username[0].toUpperCase()}
         </div>
 
-        {/* Username + ID */}
-        <div className="flex-1 min-w-0 pl-3 pr-5">
+        {/* Username + ID — flex-[2] */}
+        <div className="flex-[2] min-w-0 pl-3 pr-4">
           <div className="text-sm font-semibold text-slate-900 truncate">{user.username}</div>
           <div className="text-[11px] text-slate-400 font-mono">#{user.id}</div>
         </div>
 
-        {/* Phone */}
-        <div className="w-[155px] min-w-[155px] text-xs text-slate-500 pr-5 truncate shrink-0">
+        {/* Phone — flex-[1] */}
+        <div className="flex-[1] min-w-0 text-xs text-slate-500 pr-4 truncate">
           {user.phone_number}
         </div>
 
-        {/* Balance */}
-        <div className="w-[150px] min-w-[150px] text-right pr-7 text-[13px] font-bold text-slate-900 shrink-0">
+        {/* Balance — flex-[1] */}
+        <div className="flex-[1] min-w-0 text-right pr-6 text-[13px] font-bold text-slate-900">
           KES {user.account_balance.toLocaleString()}
         </div>
 
-        {/* All stakes button */}
-        <div className="w-[88px] min-w-[88px] flex justify-center shrink-0">
-          <button
-            onClick={() => onStakesClick(user.id, "all")}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer
-              ${allActive
-                ? "bg-blue-100 border border-blue-300 text-blue-700"
-                : "bg-slate-50 border border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600"
-              }`}
-          >
-            {user.no_of_stakes}
-            <span className="text-[10px] font-normal opacity-55">all</span>
-          </button>
+        {/* 4 filter buttons — flex-[3] */}
+        <div className="flex-[3] min-w-0 flex items-center gap-2">
+          {filterBtn("all",         "all",         allActive,         user.no_of_stakes)}
+          {filterBtn("progressing", "progressing", progressingActive, user.no_of_pending_stakes, true)}
+          {filterBtn("pending",     "pending",     pendingActive)}
+          {filterBtn("successful",  "successful",  successActive)}
         </div>
 
-        {/* Live stakes button */}
-        <div className="w-[88px] min-w-[88px] flex justify-center shrink-0">
-          <button
-            onClick={() => onStakesClick(user.id, "live")}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer
-              ${liveActive
-                ? "bg-blue-100 border border-blue-300 text-blue-700"
-                : "bg-slate-50 border border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600"
-              }`}
-          >
-            {user.no_of_pending_stakes > 0 && (
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" style={{ animation: "blink 1.2s infinite" }} />
-            )}
-            {user.no_of_pending_stakes}
-            <span className="text-[10px] font-normal opacity-55">live</span>
-          </button>
-        </div>
-
-        {/* Delete button */}
-        <div className="w-[72px] min-w-[72px] flex justify-end shrink-0">
+        {/* Delete — w-[80px] fixed */}
+        <div className="w-[80px] shrink-0 flex justify-end">
           <button
             onClick={() => onDeleteClick(user.id)}
             className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold text-red-300 hover:text-red-500 hover:bg-red-50 transition-all"
@@ -328,21 +338,22 @@ function UserRow({ user, activeDrawer, onStakesClick, onDeleteClick }: {
   )
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// skeleton for skeleton loading
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center px-6 h-[58px] border-b border-slate-200 gap-0 animate-pulse">
+    <div className="flex items-center px-6 h-[62px] border-b border-slate-200 animate-pulse">
       <div className="w-9 h-9 rounded-full bg-slate-100 shrink-0" />
-      <div className="flex-1 pl-3 pr-5">
+      <div className="flex-[2] min-w-0 pl-3 pr-4">
         <div className="w-[120px] h-3 rounded bg-slate-100 mb-1.5" />
         <div className="w-11 h-2.5 rounded bg-slate-100" />
       </div>
-      <div className="w-[155px] h-2.5 rounded bg-slate-100 mr-5 shrink-0" />
-      <div className="w-[110px] h-3 rounded bg-slate-100 mr-7 ml-auto shrink-0" />
-      <div className="w-[60px] h-7 rounded-full bg-slate-100 mr-7 shrink-0" />
-      <div className="w-[60px] h-7 rounded-full bg-slate-100 mr-3 shrink-0" />
-      <div className="w-[58px] h-7 rounded bg-slate-100 shrink-0" />
+      <div className="flex-[1] min-w-0 h-2.5 rounded bg-slate-100 pr-4" />
+      <div className="flex-[1] min-w-0 h-3 rounded bg-slate-100 pr-6" />
+      <div className="flex-[3] min-w-0 flex gap-2">
+        {[1,2,3,4].map(i => <div key={i} className="w-[90px] h-7 rounded-full bg-slate-100 shrink-0" />)}
+      </div>
+      <div className="w-[80px] h-7 rounded bg-slate-100 shrink-0" />
     </div>
   )
 }
@@ -364,7 +375,7 @@ export default function AllUsersSubTab() {
     load()
   }, [dispatch])
 
-  const toggle = (userId: number, mode: "all" | "live" | "pending" | "successful") =>
+  const toggle = (userId: number, mode: "all" | "progressing" | "pending" | "successful") =>
     setActiveDrawer(p => p?.userId === userId && p?.mode === mode ? null : { userId, mode })
 
   const filtered = (allUsersData.data || []).filter(u => {
@@ -400,18 +411,17 @@ export default function AllUsersSubTab() {
         </button>
       </div>
 
-      {/* ── Table ── */}
-      <div className="mx-5 my-4  border-slate-200 rounded-xl overflow-hidden bg-main-page-bg-color">
+      {/* Table */}
+      <div className="mx-2 my-4 border-slate-200 rounded-xl overflow-hidden bg-main-page-bg-color">
 
         {/* Column headers */}
         <div className="flex items-center px-6 h-10 bg-slate-50 border mb-2 border-slate-200">
           <div className="w-9 shrink-0" />
-          <span className="flex-1 pl-3 pr-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">User</span>
-          <span className="w-[155px] pr-5 text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Phone</span>
-          <span className="w-[150px] text-right pr-7 text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Balance</span>
-          <span className="w-[88px] text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Stakes</span>
-          <span className="w-[88px] text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Live</span>
-          <span className="w-[72px] text-right text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Action</span>
+          <span className="flex-2 min-w-0 pl-3 pr-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">User</span>
+          <span className="flex-1 min-w-0 pr-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Phone</span>
+          <span className="flex-1 min-w-0 text-right pr-6 text-[10px] font-bold uppercase tracking-wider text-slate-400">Balance</span>
+          <span className="flex-3 min-w-0 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400">Stakes Filter</span>
+          <span className="w-[80px] shrink-0 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">Action</span>
         </div>
 
         {/* User strips */}

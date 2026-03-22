@@ -50,6 +50,7 @@ export interface SubTabConfig {
         subTabs: [
         { id: "all-leagues", label: "All Leagues" },
         { id: "add-new", label: "Add New" },
+        { id: "league-management", label: "Manage League" },
       ],
     },
     {
